@@ -1,0 +1,159 @@
+import pygame
+import sys
+
+# Inicializar Pygame
+pygame.init()
+
+# Configuración de la pantalla
+ANCHO = 800
+ALTO = 600
+SCALE = 4  # Para el efecto pixelado
+ventana = pygame.display.set_mode((ANCHO, ALTO))
+pygame.display.set_caption("Menú con Pygame")
+
+# Crear superficie escalada para el efecto pixelado
+scaled_surface = pygame.Surface((ANCHO // SCALE, ALTO // SCALE))
+
+# Colores
+BACKGROUND_COLOR = (25, 17, 35)  # Fondo morado oscuro
+PANEL_COLOR = (150, 75, 0)       # Marrón del panel
+BUTTON_COLOR = (193, 111, 43)    # Marrón claro de los botones
+HOVER_COLOR = (222, 151, 76)     # Marrón más claro al pasar el mouse
+TEXT_COLOR = (0, 0, 0)           # Color del texto (negro)
+
+# Fuentes (más pequeñas para que encajen)
+fuente = pygame.font.Font(None, 20)  # Tamaño más pequeño para los botones
+fuente_titulo = pygame.font.Font(None, 24)
+
+# Función para dibujar texto
+def dibujar_texto(surface, texto, x, y, color, fuente):
+    texto_surface = fuente.render(texto, True, color)
+    texto_rect = texto_surface.get_rect(center=(x, y))
+    surface.blit(texto_surface, texto_rect)
+
+# Pantalla del menú principal
+def menu_principal():
+    opciones = [
+        {"texto": "JUGAR", "pos_y": ALTO // 2 - 40, "accion": pantalla_jugar},
+        {"texto": "TIENDA", "pos_y": ALTO // 2 + 10, "accion": pantalla_tienda},
+        {"texto": "OPCIONES", "pos_y": ALTO // 2 + 60, "accion": pantalla_opciones},
+        {"texto": "SALIR", "pos_y": ALTO // 2 + 110, "accion": salir},
+    ]
+
+    while True:
+        # Rellenar la superficie escalada para el efecto pixelado
+        scaled_surface.fill(BACKGROUND_COLOR)
+
+        # Dibujar panel (pixelado)
+        panel_rect = pygame.Rect(70 // SCALE, (ALTO // 2 - 70) // SCALE, 200 // SCALE, 220 // SCALE)
+        pygame.draw.rect(scaled_surface, PANEL_COLOR, panel_rect)
+
+        # Dibujar título "MENÚ"
+        titulo_rect = pygame.Rect(85 // SCALE, (ALTO // 2 - 90) // SCALE, 170 // SCALE, 25 // SCALE)
+        pygame.draw.rect(scaled_surface, BUTTON_COLOR, titulo_rect)
+        dibujar_texto(scaled_surface, "MENÚ", titulo_rect.centerx, titulo_rect.centery, TEXT_COLOR, fuente_titulo)
+
+        # Obtener la posición del mouse
+        x, y = pygame.mouse.get_pos()
+        x, y = x // SCALE, y // SCALE
+
+        # Dibujar las opciones del menú
+        for opcion in opciones:
+            texto_rect = pygame.Rect(85 // SCALE, opcion["pos_y"] // SCALE, 170 // SCALE, 25 // SCALE)
+            # Cambiar color si el mouse está sobre la opción
+            color = HOVER_COLOR if texto_rect.collidepoint(x, y) else BUTTON_COLOR
+            pygame.draw.rect(scaled_surface, color, texto_rect)
+
+            # Dibujar texto de la opción (fuente más pequeña)
+            dibujar_texto(scaled_surface, opcion["texto"], texto_rect.centerx, texto_rect.centery, TEXT_COLOR, fuente)
+
+        # Escalar la superficie para dar el efecto pixelado
+        ventana.blit(pygame.transform.scale(scaled_surface, (ANCHO, ALTO)), (0, 0))
+        pygame.display.flip()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                for opcion in opciones:
+                    texto_rect = pygame.Rect(85 // SCALE, opcion["pos_y"] // SCALE, 170 // SCALE, 25 // SCALE)
+                    if texto_rect.collidepoint(x, y):
+                        opcion["accion"]()
+
+# Pantalla de "JUGAR"
+def pantalla_jugar():
+    while True:
+        ventana.fill((0, 255, 0))
+        dibujar_texto(ventana, "Estás en la pantalla de JUGAR", ANCHO // 2, ALTO // 2, TEXT_COLOR, fuente)
+        dibujar_texto(ventana, "Presiona ESC para volver al menú", ANCHO // 2, ALTO - 50, TEXT_COLOR, fuente)
+
+        pygame.display.flip()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    return
+
+# Pantalla de "TIENDA"
+def pantalla_tienda():
+    items = [
+        {"nombre": "Espada", "precio": 100, "pos_y": ALTO // 2 - 20},
+        {"nombre": "Escudo", "precio": 80, "pos_y": ALTO // 2 + 20},
+        {"nombre": "Poción", "precio": 20, "pos_y": ALTO // 2 + 60},
+    ]
+
+    while True:
+        ventana.fill((0, 0, 255))
+        dibujar_texto(ventana, "Estás en la pantalla de TIENDA", ANCHO // 2, ALTO // 4, TEXT_COLOR, fuente_titulo)
+
+        for item in items:
+            texto = f"{item['nombre']} - ${item['precio']}"
+            dibujar_texto(ventana, texto, ANCHO // 2, item["pos_y"], TEXT_COLOR, fuente)
+
+        pygame.display.flip()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    return
+
+# Pantalla de "OPCIONES"
+def pantalla_opciones():
+    opciones = [
+        {"nombre": "Volumen", "valor": "50"},
+        {"nombre": "Gráficos", "valor": "Alto"},
+        {"nombre": "Controles", "valor": "Teclado"},
+    ]
+
+    while True:
+        ventana.fill((255, 0, 0))
+        dibujar_texto(ventana, "Estás en la pantalla de OPCIONES", ANCHO // 2, ALTO // 4, TEXT_COLOR, fuente_titulo)
+
+        for i, opcion in enumerate(opciones):
+            texto = f"{opcion['nombre']}: {opcion['valor']}"
+            dibujar_texto(ventana, texto, ANCHO // 2, ALTO // 2 + i * 40, TEXT_COLOR, fuente)
+
+        pygame.display.flip()
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_ESCAPE:
+                    return
+
+# Función para salir del juego
+def salir():
+    pygame.quit()
+    sys.exit()
+
+# Iniciar el menú principal
+menu_principal()
